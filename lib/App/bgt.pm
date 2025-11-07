@@ -1,3 +1,4 @@
+use v5.42;
 package App::bgt;
 use strict;
 
