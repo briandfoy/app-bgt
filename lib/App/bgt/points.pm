@@ -2,20 +2,19 @@ use v5.42;
 use utf8;
 no feature 'module_true';
 
-package App::bgt::summary;
+package App::bgt::points;
 use vars qw(@ISA);
 push @ISA, qw(App::bgt::base);
 
 sub run ($class, @args) {
 	my $summary = App::bgt::GpxTools->summary($args[0]);
 	exit(1) unless defined $summary;
-	delete $summary->{'points'};
-	say $class->to_json($summary);
+	say $class->to_json($summary->{'points'});
 	exit(0);
 	}
 
 sub description ($class) {
-	"outputs a summary of the data collected";
+	"outputs the track points as JSON";
 	}
 
 __PACKAGE__;

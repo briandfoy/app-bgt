@@ -9,7 +9,7 @@ push @ISA, qw(App::bgt::base);
 sub run ($class, @args) {
 	my $times = App::bgt::GpxTools->times($args[0]);
 	exit(1) unless defined $times;
-	say Data::Dumper::Dumper($times);
+	say $class->to_json($times);
 	exit(0);
 	}
 

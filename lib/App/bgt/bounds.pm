@@ -9,12 +9,12 @@ push @ISA, qw(App::bgt::base);
 sub run ($class, @args) {
 	my $bounds = App::bgt::GpxTools->bounds($args[0]);
 	exit(1) unless defined $bounds;
-	say Data::Dumper::Dumper($bounds);
+	say $class->to_json($bounds);
 	exit(0);
 	}
 
 sub description ($class) {
-	"outputs the bounding box for the gpx file";
+	"outputs the bounding boxes for the gpx file";
 	}
 
 __PACKAGE__;

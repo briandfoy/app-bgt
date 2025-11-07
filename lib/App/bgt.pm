@@ -33,6 +33,11 @@ package App::bgt::base {
 		@dirs;
 		}
 
+	sub to_json ($class, $data) {
+		state $rc = require Mojo::JSON;
+		Mojo::JSON::encode_json($data);
+		}
+
 	sub version ($class) {
 		$App::bgt::VERSION;
 		}
@@ -96,7 +101,7 @@ package App::bgt::GpxTools {
 
 			state $Re = 6_371_000;
 			if( exists $pt->{'lon'} ) {
-				push @points, $pt;
+				push @points, { $pt->%* }; # Geo::Gpx has overloaded stringification
 
 				my $lat_r = deg2rad($pt->{'lat'});
 				my $lon_r = deg2rad($pt->{'lon'});
@@ -138,7 +143,8 @@ package App::bgt::GpxTools {
 		$center->{'hyp'} = sqrt( reduce { $a + $b } map { $_**2 } $center->{'point'}->@{qw(y x)} );
 		$center->{'lat'} = rad2deg( atan2( $center->{'point'}{'z'}, $center->{'hyp'} ) );
 
-		$summary{'points'} = \@points;
+		# make all of these numeric for the JSON output
+		$summary{'points'} = [ map { my $p = $_; $p->{$_} += 0 for keys $p->%*; $p } @points ];
 
 		return \%summary;
 		}
