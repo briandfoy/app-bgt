@@ -1,0 +1,4 @@
+#!/usr/bin/env perl
+
+(require App::bgt)->run(@ARGV);
+

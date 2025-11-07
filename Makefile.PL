@@ -52,6 +52,8 @@ my %WriteMakefile = (
 	'LICENSE'       => 'artistic_2',
 	'AUTHOR'        => 'brian d foy <briandfoy@pobox.com>',
 
+	'EXE_FILES'     => [ 'script/bgt' ],
+
 	'CONFIGURE_REQUIRES' => {
 		'ExtUtils::MakeMaker'   => '6.64',
 		'File::Spec::Functions' => '0',
@@ -65,7 +67,12 @@ my %WriteMakefile = (
 		},
 
 	'PREREQ_PM' => {
-		'Carp' => '0',
+		'Carp'                  => '0',
+		'File::Basename'        => '0',
+		'File::Spec::Functions' => '0',
+		'Geo::Gpx'              => '0',
+		'List::Util'            => '0',
+		'Math::Trig'            => '0',
 		},
 
 	'META_MERGE' => {
