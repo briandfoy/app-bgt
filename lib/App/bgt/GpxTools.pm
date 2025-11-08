@@ -8,6 +8,51 @@ use Geo::Gpx;
 use List::Util qw(max min reduce);
 use Math::Trig;
 
+=encoding utf8
+
+=head1 NAME
+
+App::bgt::GpxTools - manipulate GPX files for bgt
+
+=head1 SYNOPSIS
+
+In a command, call C<gpx_tools> to get a C<App::bgt::GpxTools> object,
+then call the method your need.
+
+	sub run ($class, @args) {
+		my $stuff = $class->gpx_tool($args[0])->METHOD;
+
+		}
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
+
+=item * bounds(FILE)
+
+=cut
+
+sub bounds ($class, $file) {
+	my $summary = $class->summary($file);
+	$summary->{'bounds'};
+	}
+
+=item * center(FILE)
+
+=cut
+
+sub center ($class, $file) {
+	my $gpx = $class->make_gpx($file);
+	return unless defined $gpx;
+
+	}
+
+=item * make_gpx(FILE)
+
+=cut
+
 sub make_gpx ($class, $file) {
 	my $gpx;
 
@@ -34,6 +79,10 @@ sub make_gpx ($class, $file) {
 			}
 		};
 	}
+
+=item * summary(FILE)
+
+=cut
 
 sub summary ($class, $file) {
 	my $gpx = $class->make_gpx($file);
@@ -108,16 +157,9 @@ sub summary ($class, $file) {
 	return \%summary;
 	}
 
-sub bounds ($class, $file) {
-	my $summary = $class->summary($file);
-	$summary->{'bounds'};
-	}
+=item * times(FILE)
 
-sub center ($class, $file) {
-	my $gpx = $class->make_gpx($file);
-	return unless defined $gpx;
-
-	}
+=cut
 
 sub times ($class, $file) {
 	my $summary = $class->summary($file);
@@ -126,3 +168,23 @@ sub times ($class, $file) {
 
 no feature qw(module_true);
 __PACKAGE__;
+
+=back
+
+=head1 SOURCE AVAILABILITY
+
+This module is on Github:
+
+	https://github.com/briandfoy/app-bgt
+
+=head1 AUTHOR
+
+brian d foy, C<< <briandfoy@pobox.com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright © 2025, brian d foy C<< <briandfoy@pobox.com> >>. All rights reserved.
+This software is available under the Artistic License 2.0.
+
+=cut
+

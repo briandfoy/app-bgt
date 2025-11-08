@@ -49,3 +49,54 @@ sub description ($class) {
 
 no feature 'module_true';
 __PACKAGE__;
+
+=encoding utf8
+
+=head1 NAME
+
+App::bgt::command::help - list all of the commands
+
+=head1 SYNOPSIS
+
+Prints the help message is there are no arguments, or just C<help>:
+
+	% bgt
+
+	% bgt help
+	bgt
+		bounds   -  outputs the bounding boxes for the gpx file
+		help     -  outputs the help message and exits
+		inside   -  returns data on the overlap of the trackpoints and the shape
+		points   -  outputs the track points as JSON
+		summary  -  outputs a summary of the data collected
+		times    -  outputs the earliest and latest times for the gpx file
+		version  -  outputs the version and exits
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
+
+=item * run( FILE )
+
+=item * description
+
+=back
+
+=head1 SOURCE AVAILABILITY
+
+This module is on Github:
+
+	https://github.com/briandfoy/app-bgt
+
+=head1 AUTHOR
+
+brian d foy, C<< <briandfoy@pobox.com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright © 2025, brian d foy C<< <briandfoy@pobox.com> >>. All rights reserved.
+This software is available under the Artistic License 2.0.
+
+=cut

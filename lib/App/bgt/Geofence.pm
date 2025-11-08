@@ -7,18 +7,23 @@ use Mojo::File;
 use Mojo::DOM;
 use Mojo::Util qw( dumper );
 
+=encoding utf8
+
 =head1 NAME
+
+App::bgt::Geofence -
 
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
 
-=cut
+=head2 Class Methods
 
-sub debug (@m) {
-	return unless $ENV{DEBUG};
-	say STDERR @m;
-	}
+=over 4
+
+=item * extract_fences_from_kml( FILES )
+
+=cut
 
 sub extract_fences_from_kml ( $class, @files ) {
 	my @fences;
@@ -57,6 +62,11 @@ sub extract_fences_from_kml ( $class, @files ) {
 	return @fences;
 	}
 
+
+=item * new(ARGS)
+
+=cut
+
 sub new ($class, %args) {
 	my( $name, $vertices ) = @args{ qw(name vertices) };
 	my @vertices = $vertices->@*;
@@ -76,15 +86,36 @@ sub new ($class, %args) {
 	bless \%hash, $class;
 	}
 
+sub debug (@m) {
+	return unless $ENV{DEBUG};
+	say STDERR @m;
+	}
+
+=item *
+
+=back
+
+=head2 Instance methods
+
+=over 4
+
+=item * all_x
+
+=item * all_y
+
+Returns all the x (latitude) or y (longitude) points. One of the steps needs
+parallel arrays
+
+=cut
+
 sub all_x ( $self ) { map { $_->[0][0], $_->[1][0] } $self->edges->@* }
 sub all_y ( $self ) { map { $_->[0][1], $_->[1][1] } $self->edges->@* }
 
-sub edges ( $self ) { $self->{edges} }
+=item * bounding_box
 
-sub lowest_x  ( $self ) { $self->{lowest_x}  //= ( sort { $a <=> $b } $self->all_x )[ 0] }
-sub lowest_y  ( $self ) { $self->{lowest_y}  //= ( sort { $a <=> $b } $self->all_y )[ 0] }
-sub highest_x ( $self ) { $self->{highest_x} //= ( sort { $a <=> $b } $self->all_x )[-1] }
-sub highest_y ( $self ) { $self->{highest_y} //= ( sort { $a <=> $b } $self->all_y )[-1] }
+Returns the bounding box the completely contains the fence.
+
+=cut
 
 sub bounding_box ( $self ) {
 	# add 0 to force it to be numeric when going to JSON
@@ -94,11 +125,52 @@ sub bounding_box ( $self ) {
 		];
 	}
 
+=item * edges
+
+=cut
+
+sub edges ( $self ) { $self->{edges} }
+
+=item * file
+
+=cut
+
+sub file ($self) { $self->{file} }
+
+=item * fraction_inside
+
+Returns a number from 0 to 1 that represents the fraction of points inside
+the fence.
+
+=cut
+
+sub fraction_inside ( $self, $points ) {
+	my $inside = 0;
+	foreach my $point ( $points->@* ) {
+		$inside++ if $self->is_inside( $point->@{qw(lon lat)} );
+		}
+	return 0 if $inside == 0;
+	return $inside / @$points;
+	}
+
+=item * in_bounding_box( LAT, LONG )
+
+Returns true if the geocoordinate is inside the fence's bounding box, which
+might not be inside the fence.
+
+=cut
+
 sub in_bounding_box ( $self, $x, $y ) {
 	$x >= $self->lowest_x && $x <= $self->highest_x
 		&&
 	$y >= $self->lowest_y && $y <= $self->highest_y
 	}
+
+=item * is_inside( LAT, LOG )
+
+Returns true if the geocoordinate is inside the fence.
+
+=cut
 
 sub is_inside ( $self, $x, $y ) {
 	my $left_nodes = 0;
@@ -136,20 +208,57 @@ sub is_inside ( $self, $x, $y ) {
 	return $left_nodes % 2;
 	}
 
-sub fraction_inside ( $self, $points ) {
-	my $inside = 0;
-	foreach my $point ( $points->@* ) {
-		$inside++ if $self->is_inside( $point->@{qw(lon lat)} );
-		}
-	return 0 if $inside == 0;
-	return $inside / @$points;
-	}
 
-sub file ($self) { $self->{file} }
+sub lowest_x  ( $self ) { $self->{lowest_x}  //= ( sort { $a <=> $b } $self->all_x )[ 0] }
+sub lowest_y  ( $self ) { $self->{lowest_y}  //= ( sort { $a <=> $b } $self->all_y )[ 0] }
+sub highest_x ( $self ) { $self->{highest_x} //= ( sort { $a <=> $b } $self->all_x )[-1] }
+sub highest_y ( $self ) { $self->{highest_y} //= ( sort { $a <=> $b } $self->all_y )[-1] }
+
+
+
+=item * name
+
+Returns the name of the fence
+
+=cut
 
 sub name ($self) { $self->{name} }
 
+=item * name_is(NAME)
+
+Returns true is the name of the fence is C<NAME>.
+
+=cut
+
 sub name_is ($self, $name) { $self->{name} eq $name }
+
+=item * name_like(REGEX)
+
+Returns true is the name matches C<REGEX>.
+
+=cut
+
+sub name_like ($self, $pattern) { $self->{name} =~ $pattern }
 
 no feature qw(module_true);
 __PACKAGE__;
+
+=back
+
+=head1 SOURCE AVAILABILITY
+
+This module is on Github:
+
+	https://github.com/briandfoy/app-bgt
+
+=head1 AUTHOR
+
+brian d foy, C<< <briandfoy@pobox.com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright © 2025, brian d foy C<< <briandfoy@pobox.com> >>. All rights reserved.
+This software is available under the Artistic License 2.0.
+
+=cut
+

@@ -19,11 +19,15 @@ App::bgt - brian's GPX tools
 
 	use App::bgt;
 
+	App::bgt->run( COMMAND, ARGS );
+
 =head1 DESCRIPTION
+
+=head2 Methods
 
 =over 4
 
-=item run
+=item * run( COMMAND, ARGS )
 
 =cut
 
