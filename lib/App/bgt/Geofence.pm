@@ -8,6 +8,8 @@ use Mojo::DOM;
 use Mojo::Util qw( dumper );
 
 =encoding utf8
+use Set::CrossProduct;
+use Storable qw(dclone);
 
 =head1 NAME
 
@@ -86,7 +88,7 @@ sub new ($class, %args) {
 	bless \%hash, $class;
 	}
 
-sub debug (@m) {
+sub _debug (@m) {
 	return unless $ENV{DEBUG};
 	say STDERR @m;
 	}
@@ -104,7 +106,7 @@ sub debug (@m) {
 =item * all_y
 
 Returns all the x (latitude) or y (longitude) points. One of the steps needs
-parallel arrays
+parallel arrays, and this is how you get that.
 
 =cut
 
@@ -113,7 +115,8 @@ sub all_y ( $self ) { map { $_->[0][1], $_->[1][1] } $self->edges->@* }
 
 =item * bounding_box
 
-Returns the bounding box the completely contains the fence.
+Returns the bounding box the completely contains the fence. The values are in
+degrees.
 
 =cut
 
@@ -175,7 +178,7 @@ Returns true if the geocoordinate is inside the fence.
 sub is_inside ( $self, $x, $y ) {
 	my $left_nodes = 0;
 
-	debug "Threshold Y: $y";
+	_debug "Threshold Y: $y";
 
 	EDGE: foreach my $edge ( $self->edges->@* ) {
 		my( $ix, $iy ) = $edge->[0]->@*;
@@ -183,10 +186,10 @@ sub is_inside ( $self, $x, $y ) {
 		my( $slope, $intercept ) = $edge->@[2,3];
 
 		# is the edge across the Y? If not, this edge isn't important to us
-		debug "Line from $ix, $iy -> $jx, $jy";
+		_debug "Line from $ix, $iy -> $jx, $jy";
 		my $crosses = ( ( $iy <= $y ) && ( $jy >= $y ) ) || ( ( $jy <= $y ) && ( $iy >= $y ) );
 		if( $crosses ) {
-			debug "Threshold crossed";
+			_debug "Threshold crossed";
 		} else { next EDGE };
 
 		next unless $crosses;
@@ -194,27 +197,37 @@ sub is_inside ( $self, $x, $y ) {
 		# now to see if the X coordinate of the edge at the threshold Y is on the right or left
 		my $on_the_left = eval {
 			my $xp = ( $y - $intercept ) / $slope;
-			debug "XP: $xp";
-			debug "$xp <\n$x ?";
+			_debug "XP: $xp";
+			_debug "$xp <\n$x ?";
 			$xp < $x;
 			};
 		no warnings 'uninitialized';
 		next EDGE unless $on_the_left;
-		debug "XP is on the left";
+		_debug "XP is on the left";
 		$left_nodes++;
 		}
 
-	debug "left nodes is $left_nodes";
+	_debug "left nodes is $left_nodes";
 	return $left_nodes % 2;
 	}
 
+=item * highest_x
 
-sub lowest_x  ( $self ) { $self->{lowest_x}  //= ( sort { $a <=> $b } $self->all_x )[ 0] }
-sub lowest_y  ( $self ) { $self->{lowest_y}  //= ( sort { $a <=> $b } $self->all_y )[ 0] }
+=item * highest_y
+
+=item * lowest_x
+
+=item * lowest_y
+
+The exteme values of the fence, which do not necessarily correspond to points:
+the x, y values do not represent points.
+
+=cut
+
 sub highest_x ( $self ) { $self->{highest_x} //= ( sort { $a <=> $b } $self->all_x )[-1] }
 sub highest_y ( $self ) { $self->{highest_y} //= ( sort { $a <=> $b } $self->all_y )[-1] }
-
-
+sub lowest_x  ( $self ) { $self->{lowest_x}  //= ( sort { $a <=> $b } $self->all_x )[ 0] }
+sub lowest_y  ( $self ) { $self->{lowest_y}  //= ( sort { $a <=> $b } $self->all_y )[ 0] }
 
 =item * name
 
