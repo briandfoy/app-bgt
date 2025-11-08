@@ -1,10 +1,8 @@
 use v5.42;
 use utf8;
-no feature 'module_true';
 
-package App::bgt::help;
-use vars qw(@ISA);
-push @ISA, qw(App::bgt::base);
+package App::bgt::command::help;
+use parent qw(App::bgt::command);
 
 use File::Basename qw(basename);
 use File::Spec::Functions qw(catfile);
@@ -14,6 +12,8 @@ sub run ($class, @args) {
 	my $longest = 0;
 
 	$commands{$class->name} = $class->description;
+
+	say "Sub dirs: ", join " / ", $class->subdirs;
 
 	foreach my $dir ( @INC ) {
 		my $subdir = catfile( $dir, $class->subdirs );
@@ -35,15 +35,17 @@ sub run ($class, @args) {
 			}
 		}
 
-	say $class->app_name, "\n";
+	my $string = $class->app_name . "\n";
 	foreach my $name ( sort keys %commands ) {
-		printf "    %-${longest}s  -  %s\n", $name, $commands{$name};
+		$string .= sprintf "    %-${longest}s  -  %s\n", $name, $commands{$name};
 		}
 
+	$string;
 	}
 
 sub description ($class) {
 	"outputs the help message and exits";
 	}
 
+no feature 'module_true';
 __PACKAGE__;
