@@ -1,6 +1,9 @@
-my @classes = qw(
-	App::bgt
-	);
+#!perl
+use lib qw(lib);
+my @classes;
+
+push @namespaces, map { s/ lib\/ //x; s/\.pm\z//; s/ \/ /::/xgr }
+	glob('lib/App/*.pm lib/App/bgt/*.pm lib/App/bgt/command/*.pm');
 
 use Test::More;
 
