@@ -3,17 +3,19 @@ use utf8;
 
 package App::bgt::Geofence;
 
+use List::Util qw(reduce);
+use Math::Trig qw(deg2rad rad2deg);
 use Mojo::File;
 use Mojo::DOM;
 use Mojo::Util qw( dumper );
-
-=encoding utf8
 use Set::CrossProduct;
 use Storable qw(dclone);
 
+=encoding utf8
+
 =head1 NAME
 
-App::bgt::Geofence -
+App::bgt::Geofence - deal with a sorrounded area
 
 =head1 SYNOPSIS
 
@@ -126,15 +128,86 @@ sub bounding_box ( $self ) {
 		[ $self->lowest_x + 0,  $self->lowest_y  + 0 ],
 		[ $self->highest_x + 0, $self->highest_y + 0 ],
 		];
+
+	dclone $self->{bounding_box};
 	}
+
+=item * bounding_box_area
+
+Returns the area of the bounding box in square kilometers, which you can
+use to compare to other areas. For example, is this fence smaller than
+another when two fences may both completely contain an area.
+
+This is the WGS84 formula:
+
+	A = a²(1 - e²)(Δλ)(sin ϕ₂ - sin ϕ₁)
+
+	a = 6,378,137 m (WGS84)
+	e² = 2f - f², with f = 1 / 298.257223563, e² = 0.00669437999014
+	Δλ = (lonₘₐₓ - lonₘᵢₙ) (must be between -180 and 180)
+	ϕ₁ = latₘᵢₙ
+	ϕ₂ = latₘₐₓ
+
+=cut
+
+sub bounding_box_area ( $self ) {
+	state $key = 'area';
+	state $A  = 6_378_137;
+	state $a2 = $A**2;
+	state $f  = 1 / 298.257223563;
+	state $f2 = $f**2;
+	state $e2 = 2*$f - $f2;
+
+	return $self->{$key} if defined $self->{$key};
+
+	my $bounding_box = $self->bounding_box_radians;
+
+	my $delta_lambda =
+		reduce { $a - $b }
+		sort   { $b <=> $a }
+		map    { $bounding_box->[$_][1] }
+		0..1;
+
+	my $sines =
+		reduce { sin($a) - sin($b) }
+		sort   { $b <=> $a }
+		map    { $bounding_box->[$_][0] }
+		0..1;
+
+	$self->{$key} = $a2 * $delta_lambda * $sines / 1000**2;
+	}
+
+=item * bounding_box_radians
+
+Return the bounding box, with the latitude and longitude in radians.
+This is useful for computations instead of display
+
+=cut
+
+sub bounding_box_radians ($self) {
+	state $key = 'bounding_box_radians';
+	return $self->{$key} if defined $self->{$key};
+
+	$self->{$key} = $self->bounding_box;
+	my @pairs = map { $_->@* } Set::CrossProduct->new( [ [0,1], [0, 1] ])->combinations;
+
+	foreach my($i, $j) (@pairs) {
+		$self->{$key}[$i][$j] = deg2rad($self->{$key}[$i][$j]);
+		}
+
+	dclone $self->{$key};
+	}
+
 
 =item * edges
 
 =cut
 
-sub edges ( $self ) { $self->{edges} }
+sub edges ( $self ) { dclone $self->{edges} }
 
 =item * file
+
+Returns the name of the file that holds the fence.
 
 =cut
 
