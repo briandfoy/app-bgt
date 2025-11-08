@@ -27,6 +27,7 @@ sub run ($class, @args) {
 		my $this = { gpx => $file };
 		$this->{'fence'}{'name'} = $fence->name;
 		$this->{'fence'}{'file'} = $fence->file;
+		$this->{'fence'}{'bounding_box_area'} = $fence->bounding_box_area;
 		$this->{'fence'}{'bounding_box'} = $fence->bounding_box;
 
 		$this->{'inside_percent'}  = $fence->fraction_inside($summary->{'points'});
