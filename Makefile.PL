@@ -73,6 +73,12 @@ my %WriteMakefile = (
 		'Geo::Gpx'              => '0',
 		'List::Util'            => '0',
 		'Math::Trig'            => '0',
+		'Mojo::DOM'             => '0',
+		'Mojo::File'            => '0',
+		'Mojo::JSON'            => '0',
+		'Set::CrossProduct'     => '0',
+		'Storable'              => '0',
+		'Time::Moment'          => '0',
 		},
 
 	'META_MERGE' => {
