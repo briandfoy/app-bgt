@@ -79,12 +79,20 @@ sub bounds_center ($self) {
 	return dclone $self->{$key} if defined $self->{$key};
 
 	my $bounds = $self->bounds;
-	$self->{$key} = [
-		$bounds->[0][0] - $bounds->[0][1],
-		$bounds->[1][0] - $bounds->[1][1],
-		];
+	$self->{$key} = {
+		lat => ($bounds->{1}{maxlat} + $bounds->{1}{minlat}) / 2,
+		lon => ($bounds->{1}{maxlon} + $bounds->{1}{minlon}) / 2,
+		};
 
 	dclone $self->{$key};
+	}
+
+=item * centers
+
+=cut
+
+sub centers ($self) {
+	dclone $self->summary->{centers};
 	}
 
 =item * centroid
@@ -95,7 +103,7 @@ the points.
 =cut
 
 sub centroid ($self) {
-	dclone $self->summary->{centroid};
+	dclone $self->centers->{centroid};
 	}
 
 =item * file
@@ -105,6 +113,53 @@ Returns the original filename.
 =cut
 
 sub file ($self) { $self->{file} }
+
+=item * geometric_median
+
+Use's Weiszfeld's algorithm to find the geometric median of all the points in
+the path.
+
+=cut
+
+sub geometric_median ($self) {
+	state $tolerance = 1e-6;
+	state $max_iterations = 1_000;
+
+	my( $lat, $lon ) = $self->centroid->@{qw(lat lon)};
+
+	my $iter = 0;
+	ITER: while( $iter++ <= $max_iterations ) {
+		my( $num_lon, $num_lat, $den ) = (0,0,0);
+		my $iter_p = $self->gpx->iterate_points;
+		POINT: while ( my $p = $iter_p->() ) {
+			my $dist = sqrt(
+				($lat - $p->{lat})**2 + ($lon - $p->{lon})**2
+				);
+			if( $dist == 0 ) {
+				$lat = $p->{'lat'};
+				$lon = $p->{'lon'};
+				last ITER;
+				}
+
+			my $w = 1 / $dist;
+			$num_lon += $p->{lon} * $w;
+			$num_lat += $p->{lat} * $w;
+			$den   += $w;
+	say STDERR "iter: $iter w: $w den: $den";
+			}
+
+		my $lat_new = $num_lat / $den;
+		my $lon_new = $num_lon / $den;
+		my $dist_new = sqrt(
+			($lat_new - $lat)**2 + ($lon_new - $lon)**2
+			);
+		last ITER if $dist_new < $tolerance;
+
+		($lat, $lon) = ($lat_new, $lon_new);
+		}
+
+	{ iter => $iter, lat => $lat, lon => $lon };
+	}
 
 =item * gpx
 
@@ -166,12 +221,13 @@ sub summary ($self) {
 	return unless defined $self->gpx;
 
 	my %summary;
+	$self->{$key} = \%summary;
 
 	my $times = $summary{'times'} = {};
 	$times->{'latest'}   = { epoch => "-Inf", human => undef };
 	$times->{'earliest'} = { epoch => "+Inf", human => undef };
 
-	my $centroid = $summary{'centroid'} = {};
+	my $centroid = $summary{'centers'}{'centroid'} = {};
 
 	my $bounds = $summary{'bounds'} = {};
 
@@ -179,6 +235,7 @@ sub summary ($self) {
 
 	my $iter = $self->gpx->iterate_points;
 	while ( my $pt = $iter->() ) {
+	$self->{$key} = \%summary;
 		if( exists $pt->{'time'} ) {
 			$times->{'earliest'}{'epoch'} = $pt->{'time'} if $times->{'earliest'}{'epoch'} > $pt->{'time'};
 			$times->{'latest'}{'epoch'}   = $pt->{'time'} if $times->{'latest'}{'epoch'}   < $pt->{'time'};
@@ -227,15 +284,16 @@ sub summary ($self) {
 	foreach my $k ( qw(x y z) ) {
 		$centroid->{'point'}{$k} = $centroid->{'grand'}{$k} / $centroid->{'grand'}{'count'};
 		}
-
 	$centroid->{'lon'} = rad2deg( atan2( $centroid->{'point'}{'y'}, $centroid->{'point'}{'x'} )      );
 	$centroid->{'hyp'} = sqrt(    reduce { $a + $b } map { $_**2 } $centroid->{'point'}->@{qw(y x)}  );
 	$centroid->{'lat'} = rad2deg( atan2( $centroid->{'point'}{'z'}, $centroid->{'hyp'} )             );
 
+	$summary{'centers'}{'bounds'} = $self->bounds_center;
+	$summary{'centers'}{'geometric_median'} = $self->geometric_median;
+
 	# make all of these numeric for the JSON output
 	$summary{'points'} = [ map { my $p = $_; $p->{$_} += 0 for keys $p->%*; $p } @points ];
 
-	$self->{$key} = \%summary;
 	dclone $self->{$key};
 	}
 
