@@ -5,7 +5,7 @@ package App::bgt::command::points;
 use parent qw(App::bgt::command);
 
 sub run ($class, @args) {
-	my $summary = $class->gpx_tool->summary($args[0]);
+	my $summary = $class->gpx_tool($args[0])->summary;
 	return unless defined $summary;
 	$class->to_json($summary->{'points'});
 	}

@@ -5,10 +5,10 @@ package App::bgt::command::summary;
 use parent qw(App::bgt::command);
 
 sub run ($class, @args) {
-	my $summary = $class->gpx_tool->summary($args[0]);
+	my $summary = $class->gpx_tool($args[0])->summary;
 	return unless defined $summary;
 	delete $summary->{'points'};
-	$summary;
+	$class->to_json($summary);
 	}
 
 sub description ($class) {

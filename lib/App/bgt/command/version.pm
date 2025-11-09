@@ -5,7 +5,7 @@ package App::bgt::command::version;
 use parent qw(App::bgt::command);
 
 sub run ($class, @args) {
-	sprintf "%s %s\n", $class->app_name, $class->version;
+	sprintf "%s %s", $class->app_name, $class->version;
 	}
 
 sub description ($class) {

@@ -53,9 +53,9 @@ its class name.
 
 =cut
 
-sub gpx_tool ($class) {
+sub gpx_tool ($class, $file) {
 	state $rc = require App::bgt::GpxTools;
-	return 'App::bgt::GpxTools';
+	my $gpx_tool = App::bgt::GpxTools->new($file);
 	}
 
 =item * name

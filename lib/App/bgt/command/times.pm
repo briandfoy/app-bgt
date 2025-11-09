@@ -5,7 +5,7 @@ package App::bgt::command::times;
 use parent qw(App::bgt::command);
 
 sub run ($class, @args) {
-	my $times = $class->gpx_tool->times($args[0]);
+	my $times = $class->gpx_tool($args[0])->times;
 	return unless defined $times;
 	$times;
 	}

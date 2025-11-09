@@ -13,7 +13,7 @@ sub run ($class, @args) {
 		return;
 		}
 
-	my $summary = $class->gpx_tool->summary($file);
+	my $summary = $class->gpx_tool($file)->summary;
 	return unless defined $summary;
 
 	my @fences = App::bgt::Geofence->extract_fences_from_kml(@args);

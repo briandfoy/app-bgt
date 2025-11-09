@@ -13,8 +13,6 @@ sub run ($class, @args) {
 
 	$commands{$class->name} = $class->description;
 
-	say "Sub dirs: ", join " / ", $class->subdirs;
-
 	foreach my $dir ( @INC ) {
 		my $subdir = catfile( $dir, $class->subdirs );
 		next unless -d $subdir;

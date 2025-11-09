@@ -5,8 +5,7 @@ package App::bgt::command::bounds;
 use parent qw(App::bgt::command);
 
 sub run ($class, @args) {
-	my $bounds = $class->gpx_tool->bounds($args[0]);
-	return unless defined $bounds;
+	my $bounds = $class->gpx_tool($args[0])->bounds;
 	$class->to_json($bounds);
 	}
 
