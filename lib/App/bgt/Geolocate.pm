@@ -48,9 +48,9 @@ sub ebird ($lat, $lon) {
 		lat => $lat,
 		lon => $lon,
 		},
-	country => $points[0]{'countryCode'}
-	city    =>
-	state   =>
+	country => $points[0]{'countryCode'},
+	city    => '',
+	state   => '',
 	closest => $points[0],
 	raw => \@points,
 	}
