@@ -6,9 +6,27 @@ package App::bgt::Geolocate;
 use Mojo::UserAgent;
 use Mojo::Util qw(dumper);
 
+=encoding utf8
+
+=head1 NAME
+
+App::bgt::Geofence - deal with a surrounded area
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 Class Methods
+
+=over 4
+
+=item * geolocate( FILES )
+
+=cut
+
 $ENV{MAPQUEST_CONSUMER_KEY} = 'IBpTFuUwrP66rjT49KOVhLXpSiVLNZoK';
 
-say dumper( geolocate('40.667','-73.456') );
+#say dumper( geolocate('40.667','-73.456') );
 
 sub geolocate ($lat, $lon) {
 	my %h;
@@ -16,6 +34,10 @@ sub geolocate ($lat, $lon) {
 	$h{'mapquest'}  = mapquest($lat, $lon);
 	return \%h;
 	}
+
+=item * ebird( LAT, LONG )
+
+=cut
 
 sub ebird ($lat, $lon) {
 	state $url = 'https://api.ebird.org/v2/ref/hotspot/geo';
@@ -56,6 +78,10 @@ sub ebird ($lat, $lon) {
 	}
 	}
 
+=item * mapquest( LAT, LONG )
+
+=cut
+
 sub mapquest ($lat, $lon) {
 	# https://developer.mapquest.com/documentation/api/geocoding/reverse/get.html
 	state $url = 'https://www.mapquestapi.com/geocoding/v1/reverse';
@@ -81,6 +107,10 @@ sub mapquest ($lat, $lon) {
 	raw     => $json,
 	}
 	}
+
+=item * nominatim( LAT, LONG )
+
+=cut
 
 sub nominatim ($lat, $lon) { # OpenStreetMaps
 	state $url = "https://nominatim.openstreetmap.org/reverse";
@@ -108,9 +138,17 @@ sub nominatim ($lat, $lon) { # OpenStreetMaps
 	}
 	}
 
+=item * query( URL, FORM_DATA )
+
+=cut
+
 sub query ($url, $query) {
 	ua()->get( $url => form => $query )->res->json;
 	}
+
+=item * ua()
+
+=cut
 
 sub ua () {
 	my $ua = Mojo::UserAgent->new;
@@ -120,3 +158,24 @@ sub ua () {
 
 no feature qw(module_true);
 __PACKAGE__;
+
+=back
+
+=head1 SOURCE AVAILABILITY
+
+This module is on Github:
+
+	https://github.com/briandfoy/app-bgt
+
+=head1 AUTHOR
+
+brian d foy, C<< <briandfoy@pobox.com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright © 2025-2026, brian d foy C<< <briandfoy@pobox.com> >>. All rights reserved.
+
+This software is available under the Artistic License 2.0.
+
+=cut
+
