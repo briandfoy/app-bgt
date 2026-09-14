@@ -1,0 +1,33 @@
+Changes
+corpus/gpx/jamaica_bay_east.gpx
+corpus/gpx/jamaica_bay_east_west.gpx
+corpus/gpx/jamaica_bay_west.gpx
+'corpus/kml/Jamaica Bay Wildlife Refuge - East.kml'
+'corpus/kml/Jamaica Bay Wildlife Refuge - West.kml'
+examples/placeholder.pl
+INSTALL.SKIP
+lib/App/bgt.pm
+lib/App/bgt/command.pm
+lib/App/bgt/command/bounds.pm
+lib/App/bgt/command/help.pm
+lib/App/bgt/command/inside.pm
+lib/App/bgt/command/points.pm
+lib/App/bgt/command/summary.pm
+lib/App/bgt/command/times.pm
+lib/App/bgt/command/version.pm
+lib/App/bgt/Geofence.pm
+lib/App/bgt/Geolocate.pm
+lib/App/bgt/GpxTools.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+README.pod
+script/bgt
+SECURITY.md
+t/compile.t
+t/load.t
+t/pod.t
+t/pod_coverage.t
+t/test_manifest
+xt/changes.t
